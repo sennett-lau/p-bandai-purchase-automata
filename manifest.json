@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "P-Bandai Purchase Automata",
+  "version": "1.0",
+  "description": "Set, wait, and purchase.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html"
+  }
+}
