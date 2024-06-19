@@ -139,6 +139,26 @@ async function handleOrderInformationPageActions() {
   }
 }
 
+async function handleOrderConfirmationPageActions() {
+  try {
+    console.log('Handling order confirmation page actions...');
+
+    // Wait for the agreement button and click it
+    const agreementButton = await waitForSelector('#placeOrderForm > section.o-section.a-box.o-agree.u-sm-mb80.u-xs-mb60 > div > label');
+    agreementButton.click();
+
+    // mimic the user scrolling down to the bottom of the page
+    window.scrollTo(0, document.body.scrollHeight, 'smooth');
+
+    // Wait for the confirm button and click it
+    const confirmButton = await waitForSelector('#orderInfoConfirmBtn');
+    confirmButton.click();
+
+  } catch (error) {
+    console.error('Error during order confirmation page actions:', error);
+  }
+}
+
 chrome.storage.local.get(['isRunning', 'itemAmount', 'purchaseTime', 'itemId', 'isRefreshed'], (data) => {
   console.log('Current config data:', data);
 
@@ -163,5 +183,9 @@ chrome.storage.local.get(['isRunning', 'itemAmount', 'purchaseTime', 'itemId', '
     console.log('On the order information page. Filling in details...');
 
     handleOrderInformationPageActions(data);
+  } else if (window.location.href.startsWith('https://p-bandai.com/hk/checkout/confirm')) {
+    console.log('On the order confirmation page. Waiting for user to confirm order...');
+
+    handleOrderConfirmationPageActions();
   }
 });
