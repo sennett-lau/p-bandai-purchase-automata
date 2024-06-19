@@ -122,6 +122,23 @@ async function handleCartPageActions(config) {
   }
 }
 
+async function handleOrderInformationPageActions() {
+  try {
+    console.log('Handling order information page actions...');
+
+    // Wait for the Visa payment option and click it
+    const visaPaymentOption = await waitForSelector('#pBOrderInfoForm > section.u-sm-mb48.u-xs-mb16 > div > div > section > div:nth-child(12) > div > div.m-table__td.js-radio-group > div:nth-child(1) > label');
+    visaPaymentOption.click();
+
+    // Wait for the confirm button and click it
+    const confirmButton = await waitForSelector('#confirmOrderInfo');
+    confirmButton.click();
+
+  } catch (error) {
+    console.error('Error during order information page actions:', error);
+  }
+}
+
 chrome.storage.local.get(['isRunning', 'itemAmount', 'purchaseTime', 'itemId', 'isRefreshed'], (data) => {
   console.log('Current config data:', data);
 
@@ -142,5 +159,9 @@ chrome.storage.local.get(['isRunning', 'itemAmount', 'purchaseTime', 'itemId', '
     console.log('On the cart page. Starting purchase...');
 
     handleCartPageActions(data);
+  } else if (window.location.href.startsWith('https://p-bandai.com/hk/checkout/orderinformation')) {
+    console.log('On the order information page. Filling in details...');
+
+    handleOrderInformationPageActions(data);
   }
 });
