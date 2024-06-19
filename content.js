@@ -19,16 +19,20 @@ function waitForSelector(selector, timeout = 30000) {
   });
 }
 
-function logXMinutesBeforePurchaseTime(msUntilPurchase, minutes) {
-  setTimeout(() => {
-    console.log(`Running auto buy script in ${minutes} minutes...`);
-  }, msUntilPurchase - minutes * 60 * 1000);
+function logXMinutesBeforePurchaseTime(msUntilPurchase, minutesList) {
+  for (const minutes of minutesList) {
+    setTimeout(() => {
+      console.log(`Running auto buy script in ${minutes} minutes...`);
+    }, msUntilPurchase - minutes * 60 * 1000);
+  }
 }
 
-function logXSecondsBeforePurchaseTime(msUntilPurchase, seconds) {
-  setTimeout(() => {
-    console.log(`Running auto buy script in ${seconds} seconds...`);
-  }, msUntilPurchase - seconds * 1000);
+function logXSecondsBeforePurchaseTime(msUntilPurchase, secondsList) {
+  for (const seconds of secondsList) {
+    setTimeout(() => {
+      console.log(`Running auto buy script in ${seconds} seconds...`);
+    }, msUntilPurchase - seconds * 1000);
+  }
 }
 
 async function sleep(ms) {
@@ -85,16 +89,9 @@ async function handleItemPageWatcher(config) {
   console.log(`Time until purchase: ${timeUntilPurchaseMinutes} minutes (${timeUntilPurchaseSeconds} seconds)`);
 
   if (timeUntilPurchase > 0) {
-    logXMinutesBeforePurchaseTime(timeUntilPurchase, 3);
-    logXMinutesBeforePurchaseTime(timeUntilPurchase, 1);
+    logXMinutesBeforePurchaseTime(timeUntilPurchase, [3, 1]);
 
-    logXSecondsBeforePurchaseTime(timeUntilPurchase, 30);
-    logXSecondsBeforePurchaseTime(timeUntilPurchase, 10);
-    logXSecondsBeforePurchaseTime(timeUntilPurchase, 5);
-    logXSecondsBeforePurchaseTime(timeUntilPurchase, 4);
-    logXSecondsBeforePurchaseTime(timeUntilPurchase, 3);
-    logXSecondsBeforePurchaseTime(timeUntilPurchase, 2);
-    logXSecondsBeforePurchaseTime(timeUntilPurchase, 1);
+    logXSecondsBeforePurchaseTime(timeUntilPurchase, [30, 10, 5, 4, 3, 2, 1]);
   }
 
   setTimeout(() => {
