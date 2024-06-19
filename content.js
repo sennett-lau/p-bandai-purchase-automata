@@ -31,11 +31,46 @@ function logXSecondsBeforePurchaseTime(msUntilPurchase, seconds) {
   }, msUntilPurchase - seconds * 1000);
 }
 
-async function sleep (ms) {
+async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function automatePurchase(config) {
+async function handleAddToCartAction(config) {
+  try {
+    console.log('Running auto buy script...');
+
+    // Wait for the purchase number input and update its value
+    const purchaseNumberInput = await waitForSelector('#sc_p07_01_purchaseNumber');
+    purchaseNumberInput.value = config.itemAmount.toString();
+
+    // Monitor network requests and redirect to checkout page
+    const observer = new MutationObserver(async () => {
+      // check if the element with id 'addToCartLayer' is visible
+      const addToCartLayer = await waitForSelector('#addToCartLayer', 5000);
+
+      if (!addToCartLayer) {
+
+        // refresh the page if the element is not found
+        window.location.reload();
+        return;
+      }
+
+      observer.disconnect();
+      window.location.href = 'https://p-bandai.com/hk/cart';
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Click the add to cart button
+    const addToCartButton = await waitForSelector('#addToCartButton');
+    addToCartButton.click();
+
+  } catch (error) {
+    console.error('Error during purchase automation:', error);
+  }
+}
+
+async function handleItemPageWatcher(config) {
   const nowUTC8 = new Date().getTime();
   const purchaseTimeUTC8 = new Date(config.purchaseTime).getTime();
 
@@ -73,42 +108,20 @@ async function automatePurchase(config) {
       return
     }
 
-    runAutoBuyScript(config);
+    handleAddToCartAction(config);
   }, timeUntilPurchase);
 }
 
-async function runAutoBuyScript(config) {
+async function handleCartPageActions(config) {
   try {
-    console.log('Running auto buy script...');
+    console.log('Handling cart page actions...');
 
-    // Wait for the purchase number input and update its value
-    const purchaseNumberInput = await waitForSelector('#sc_p07_01_purchaseNumber');
-    purchaseNumberInput.value = config.itemAmount.toString();
-
-    // Monitor network requests and redirect to checkout page
-    const observer = new MutationObserver(async () => {
-      // check if the element with id 'addToCartLayer' is visible
-      const addToCartLayer = document.getElementById('addToCartLayer');
-
-      if (!addToCartLayer) {
-
-        // refresh the page if the element is not found
-        window.location.reload();
-        return;
-      }
-
-      observer.disconnect();
-      window.location.href = 'https://p-bandai.com/hk/cart';
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Click the add to cart button
-    const addToCartButton = await waitForSelector('#addToCartButton');
-    addToCartButton.click();
+    // Wait for the checkout button and click it
+    const checkoutButton = await waitForSelector('.m-cart--foot__fee__btn > a');
+    checkoutButton.click();
 
   } catch (error) {
-    console.error('Error during purchase automation:', error);
+    console.error('Error during cart page actions:', error);
   }
 }
 
@@ -120,10 +133,17 @@ chrome.storage.local.get(['isRunning', 'itemAmount', 'purchaseTime', 'itemId', '
     return;
   }
 
-  if (window.location.href !== `https://p-bandai.com/hk/item/${data.itemId}`) {
-    console.log("Not on the target item URL. Stopping automation.");
-    return;
-  }
+  if (window.location.href.startsWith('https://p-bandai.com/hk/item')) {
 
-  automatePurchase(data);
+    if (window.location.href !== `https://p-bandai.com/hk/item/${data.itemId}`) {
+      console.log("Not on the target item URL. Stopping automation.");
+      return;
+    }
+
+    handleItemPageWatcher(data);
+  } else if (window.location.href === 'https://p-bandai.com/hk/cart') {
+    console.log('On the cart page. Starting purchase...');
+
+    handleCartPageActions(data);
+  }
 });
