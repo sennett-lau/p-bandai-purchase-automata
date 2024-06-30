@@ -150,9 +150,10 @@ async function handleOrderConfirmationPageActions() {
     // mimic the user scrolling down to the bottom of the page
     window.scrollTo(0, document.body.scrollHeight, 'smooth');
 
-    // Wait for the confirm button and click it
-    const confirmButton = await waitForSelector('#orderInfoConfirmBtn');
-    confirmButton.click();
+    // DEPRECATED: Click with scripts makes the website redirect to a empty cart page
+    // // Wait for the confirm button and click it
+    // const confirmButton = await waitForSelector('#orderInfoConfirmBtn');
+    // confirmButton.click();
 
   } catch (error) {
     console.error('Error during order confirmation page actions:', error);
